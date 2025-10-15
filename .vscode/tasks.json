@@ -1,0 +1,69 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "conda: create env",
+            "type": "shell",
+            "command": "conda env create -f environment.yml -n polymind",
+            "problemMatcher": [],
+            "detail": "Create Conda env with Python 3.11 and CUDA 12.4"
+        },
+        {
+            "label": "conda: update env",
+            "type": "shell",
+            "command": "conda env update -f environment.yml -n polymind",
+            "problemMatcher": [],
+            "detail": "Update Conda env"
+        },
+        {
+            "label": "conda: install torch (CUDA 12.4)",
+            "type": "shell",
+            "command": "conda install -n polymind pytorch pytorch-cuda=12.4 -c pytorch -c nvidia -y",
+            "problemMatcher": [],
+            "detail": "Install PyTorch with CUDA 12.4 in Conda env"
+        },
+        {
+            "label": "uv: sync",
+            "type": "shell",
+            "command": "uv sync",
+            "problemMatcher": [],
+            "detail": "Sync dependencies using uv (requires uv installed)"
+        },
+        {
+            "label": "venv: create",
+            "type": "shell",
+            "command": "python -m venv .venv",
+            "problemMatcher": [],
+            "detail": "Create virtual environment"
+        },
+        {
+            "label": "venv: install deps",
+            "type": "shell",
+            "command": ".venv\\Scripts\\python -m pip install -U pip; .venv\\Scripts\\pip install -r requirements.txt",
+            "problemMatcher": [],
+            "dependsOn": [
+                "venv: create"
+            ],
+            "detail": "Install Python dependencies"
+        },
+        {
+            "label": "lint",
+            "type": "shell",
+            "command": ".venv\\Scripts\\ruff check src",
+            "problemMatcher": []
+        },
+        {
+            "label": "test",
+            "type": "shell",
+            "command": ".venv\\Scripts\\pytest -q",
+            "problemMatcher": []
+        },
+        {
+            "label": "conda: smoke torch",
+            "type": "shell",
+            "command": "conda run -n polymind python scripts/smoke_torch.py",
+            "problemMatcher": [],
+            "detail": "Run torch CUDA smoke test inside conda env"
+        }
+    ]
+}

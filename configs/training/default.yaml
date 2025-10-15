@@ -1,0 +1,17 @@
+trainer: local
+mixed_precision: bf16
+model:
+  name: polymind
+  vocab_size: 32000
+  d_model: 512
+  n_layers: 6
+  n_heads: 8
+  max_seq: 1024
+  block: transformer_block_v1
+checkpoints:
+  local_dir: models/checkpoints
+  save_every_steps: 500
+  upload:
+    s3: false
+    gcs: false
+    azure: false

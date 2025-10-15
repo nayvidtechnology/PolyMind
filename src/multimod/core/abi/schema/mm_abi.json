@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.com/mm_abi.schema.json",
+  "title": "MM-ABI v1.1",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "type": "string",
+      "enum": ["1.0", "1.1"]
+    },
+    "projector": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "t_cap": { "type": "integer", "minimum": 1 },
+        "T_cap": { "type": ["integer", "null"], "minimum": 1, "description": "Deprecated alias for t_cap" },
+        "d_model": { "type": "integer", "minimum": 1 },
+        "recipe_hint": { "type": "string", "enum": ["base", "share"] },
+        "encoder_trainable": { "type": "string", "enum": ["none", "norms", "last_k_blocks"] }
+      },
+      "required": ["d_model"],
+      "anyOf": [
+        {"required": ["t_cap"]},
+        {"required": ["T_cap"]},
+        {"not": {"anyOf": [{"required": ["t_cap"]}, {"required": ["T_cap"]}]}}
+      ]
+    }
+  },
+  "required": ["projector"]
+}

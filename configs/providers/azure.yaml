@@ -1,0 +1,5 @@
+provider: azure
+# For Azure OpenAI or Azure AI Inference
+endpoint: ${AZURE_OPENAI_ENDPOINT}
+api_key_env: AZURE_OPENAI_API_KEY
+deployment: gpt-4o-mini

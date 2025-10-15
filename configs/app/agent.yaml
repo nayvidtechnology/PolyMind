@@ -1,0 +1,6 @@
+env: agent
+include: default
+logging:
+  level: INFO
+runtime:
+  device: auto
