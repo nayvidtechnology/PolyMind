@@ -1,0 +1,11 @@
+name: polymind
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pytorch-cuda=12.4
+  - pip
+  - pip:
+      - -r requirements.txt

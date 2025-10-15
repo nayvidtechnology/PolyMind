@@ -1,0 +1,6 @@
+env: local
+include: default
+logging:
+  level: DEBUG
+runtime:
+  device: cpu

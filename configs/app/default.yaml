@@ -1,0 +1,7 @@
+env: default
+logging:
+  level: INFO
+runtime:
+  device: auto
+  max_tokens: 256
+  enable_tools: true

@@ -1,0 +1,57 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run sample chat (local)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/polymind/runtime/cli/chat.py",
+            "args": [
+                "--provider",
+                "openai",
+                "--message",
+                "Hello PolyMind!"
+            ],
+            "console": "integratedTerminal",
+            "envFile": "${workspaceFolder}/.env",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/src"
+            }
+        },
+        {
+            "name": "Run training dry-run",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/polymind/runtime/cli/train.py",
+            "args": [
+                "--config",
+                "configs/training/default.yaml",
+                "--dry-run"
+            ],
+            "console": "integratedTerminal",
+            "envFile": "${workspaceFolder}/.env",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/src"
+            }
+        },
+        {
+            "name": "Run training one-step (local)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/polymind/runtime/cli/train.py",
+            "args": [
+                "--config",
+                "configs/training/default.yaml",
+                "--no-dry-run"
+            ],
+            "console": "integratedTerminal",
+            "envFile": "${workspaceFolder}/.env",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/src"
+            }
+        }
+    ]
+}
