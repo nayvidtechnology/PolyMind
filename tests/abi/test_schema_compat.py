@@ -1,6 +1,6 @@
 import sys, pathlib
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "src"))
-from multimod.core.abi import validate_mm_abi
+from polymind.core.abi import validate_mm_abi
 
 
 def test_v10_T_cap_supported_and_normalized():

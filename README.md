@@ -4,13 +4,18 @@ Poly for “many modalities” and “many minds” — emphasizes modular desig
 # Modular Multi‑Modal LLM — Architecture, Design & Delivery Playbook
 
 **Author:** Divyang (Solution Architect)  
-**Version:** 1.0 (MM‑ABI v1.0)  
+**Version:** 1.1 (MM‑ABI v1.1)  
 **Scope:** Laptop & Mobile on‑device multi‑modal LLM with cloud‑optional training; modular components that teams can train independently and assemble via strict interfaces; publishable artifacts for local and app embedding.
 
 ---
 
 ## 0) Executive Summary
-A compact, modular, multi‑modal LLM stack built around a strict **MM‑ABI** (Application Brain Interface). Teams produce swappable **Encoders/Projectors/Decoders/Skills** that plug into a small **Core LLM** (2–4B). An Assembly Graph describes a build (Perception‑first, Math‑first, Audio‑first). The stack ships consistent runtimes (GGUF, ONNX, CoreML, ExecuTorch) and a cloud‑agnostic training pipeline (AWS/GCP/Azure) with experiment tracking, checkpoints, and CI gates.
+A compact, modular, multi‑modal LLM stack built around a strict **MM‑ABI v1.1** (Application Brain Interface). Teams produce swappable **Encoders/Projectors/Decoders/Skills** that plug into a small **Core LLM** (2–4B). An Assembly Graph describes a build (Perception‑first, Math‑first, Audio‑first). The stack ships consistent runtimes (GGUF, ONNX, CoreML, ExecuTorch) and a cloud‑agnostic training pipeline (AWS/GCP/Azure) with experiment tracking, checkpoints, and CI gates.
+
+**MM-ABI v1.1 Features:**
+- Projector metadata extensions: `recipe_hint` (base|share), `encoder_trainable` (none|norms|last_k_blocks)
+- Canonical `t_cap` field (deprecated alias `T_cap` still supported with warning)
+- Partial vision-encoder finetuning policy for cores ≤ 3B parameters
 
 Targets:  
 - Laptop (NVIDIA/AMD/Intel GPU, NPU)  
@@ -44,7 +49,7 @@ Latency budgets: text <300 ms first token; image caption <900 ms; chart‑QA <1.
 
 ---
 
-## 2) MM‑ABI v1.0 (Contracts)
+## 2) MM‑ABI v1.1 (Contracts)
 
 ### 2.1 Token & Sequence Contracts
 - `vocab_size`: 32000 (shared tokenizer)  
@@ -54,11 +59,14 @@ Latency budgets: text <300 ms first token; image caption <900 ms; chart‑QA <1.
 - KV dtype: FP8/INT8 (flag)  
 - RoPE scaling: LongRoPE enabled
 
-### 2.2 Projector Contract
+### 2.2 Projector Contract (MM-ABI v1.1)
 - **Input:** `[B, T_enc, D_enc]`  
-- **Output:** `[B, T_llm ≤ T_cap, d_model]`  
-- **Caps:** `T_cap` per modality (Image 64; Audio 96; Video 128 default)  
+- **Output:** `[B, T_llm ≤ t_cap, d_model]`  
+- **Caps:** `t_cap` per modality (Image 64; Audio 96; Video 128 default)  
+- **Recipe Hint:** `recipe_hint` ∈ {base, share} — guides training strategy (TinyLLaVA-style)
+- **Encoder Training:** `encoder_trainable` ∈ {none, norms, last_k_blocks} — partial encoder finetuning policy
 - Pooling: Adaptive 1D or learned downsampler; optional temporal block for video
+- **Note:** `T_cap` (uppercase) is deprecated; use `t_cap` (lowercase). Validators normalize automatically with deprecation warning.
 
 ### 2.3 Tool‑Call JSON Contract
 Text stream embeds blocks between `<tool_call>` and `</tool_call>` containing compact JSON:
@@ -79,7 +87,7 @@ name: vision-enc
 version: 1.3.0
 type: encoder
 modality: image
-abi: mm-abi-1.0
+abi: mm-abi-1.1
 inputs:
   - name: image
     shape: [H,W,3]
@@ -97,24 +105,26 @@ quant:
   supported: [int8, int4]
 ```
 
-### 3.2 Projector (Vision) — Example Manifest
+### 3.2 Projector (Vision) — Example Manifest (MM-ABI v1.1)
 ```yaml
 name: vision-proj
 version: 1.2.0
 type: projector
 modality: image
-abi: mm-abi-1.0
+abi: mm-abi-1.1  # Updated to v1.1
 inputs:
   - name: patch_tokens
     shape: [T_enc, D_enc]
     dtype: fp16
 outputs:
   - name: llm_tokens
-    shape: [T_cap, d_model]
+    shape: [t_cap, d_model]  # Canonical: lowercase t_cap
     dtype: fp16
 params:
-  T_cap: 64
+  t_cap: 64  # Canonical field (v1.1+)
   d_model: 2048
+  recipe_hint: share  # New in v1.1: base|share (TinyLLaVA-style)
+  encoder_trainable: norms  # New in v1.1: none|norms|last_k_blocks
 export:
   onnx: vision_proj.onnx
 ```
@@ -125,7 +135,7 @@ name: img-dec
 version: 0.8.0
 type: decoder
 modality: image
-abi: mm-abi-1.0
+abi: mm-abi-1.1
 inputs:
   - name: latent_tokens
     shape: [T_dec, d_model]
@@ -142,7 +152,7 @@ export:
 name: chartqa
 version: 0.6.0
 type: skill
-abi: mm-abi-1.0
+abi: mm-abi-1.1
 inputs:
   - name: image_ref
     type: uri
@@ -170,9 +180,9 @@ core:
 
 modalities:
   - enc: {ref: vision-enc@1.3.0}
-    proj: {ref: vision-proj@1.2.0, T_cap: 64, out_dim: 2048}
+    proj: {ref: vision-proj@1.2.0, t_cap: 64, out_dim: 2048, recipe_hint: share, encoder_trainable: norms}
   - enc: {ref: audio-enc@1.1.0}
-    proj: {ref: audio-proj@1.0.0, T_cap: 96, out_dim: 2048}
+    proj: {ref: audio-proj@1.0.0, t_cap: 96, out_dim: 2048, recipe_hint: base, encoder_trainable: none}
 
 decoders:
   - {ref: img-dec@0.8.0, size: 256, steps: 6}

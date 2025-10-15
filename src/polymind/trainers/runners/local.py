@@ -6,8 +6,8 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
-from polymind.core.model import PolymindModel, ModelConfig  # type: ignore
-from storage.local_fs import LocalFS  # type: ignore
+from polymind.core.model import PolymindModel, ModelConfig
+from polymind.storage.local_fs import LocalFS
 
 
 class LocalTrainer:
